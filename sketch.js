@@ -1,24 +1,54 @@
-let catImage, catImageL, catImageR, waterImage, backgroundImage, platformImage, victoryPlatformImage, fishImage, smallFishImage, ballImage;
+let catImage, catImageL, catImageR, waterImage, backgroundImage, platformImage, victoryPlatformImage, fishImage, smallFishImage, ballImage, underOceanImage;
 let startOfGame, gameOver, wonGame, platformX1, platformX2, platforms1, platforms2, obstacles, lives, previousY1, previousY2;
 let healthBoosts, collectibleFish, points, balls;
 let offsetAmount;
 let currentOffset;
 let victoryPlatform;
+let imageChangeCounter;
 let highScore = 0;
+let button, restartButton;
+
+let catImageR1, catImageR2, catImageR3;
+let catImageL1, catImageL2, catImageL3;
+let catImageR1Injured, catImageR2Injured, catImageR3Injured;
+let catImageL1Injured, catImageL2Injured, catImageL3Injured;
+let catImageRIdle, catImageLIdle;
 
 function preload()
 {
   catImageR = loadImage("assets/catR.png");
   catImageL = loadImage("assets/catL.png");
+
+  catImageR1 = loadImage("assets/cat1r.png");
+  catImageR2 = loadImage("assets/cat2r.png")
+  catImageR3 = loadImage("assets/cat3r.png");
+  catImageL1 = loadImage("assets/cat1l.png");
+  catImageL2 = loadImage("assets/cat2l.png")
+  catImageL3 = loadImage("assets/cat3l.png");
+
+  catImageR1Injured = loadImage("assets/cat1r-injured.png");
+  catImageR2Injured = loadImage("assets/cat2r-injured.png")
+  catImageR3Injured = loadImage("assets/cat3r-injured.png");
+  catImageL1Injured = loadImage("assets/cat1l-injured.png");
+  catImageL2Injured = loadImage("assets/cat2l-injured.png")
+  catImageL3Injured = loadImage("assets/cat3l-injured.png");
+
+  catImageRIdle = loadImage("assets/catIdleR.png");
+  catImageLIdle = loadImage("assets/catIdleL.png");
+
+  backgroundImage = loadImage("assets/background.png");
   //cloudImage = loadImage("");
   waterImage = loadImage("assets/water.png");
   victoryPlatformImage = loadImage("assets/blossom_plank.png");
   platformImage = loadImage("assets/vine_plank.png");
   fishImage = loadImage("assets/fish.png");
   ballImage = loadImage("assets/yarn.png");
+  underOceanImage = loadImage("assets/ocean.jpeg");
+
   smallFishImage = loadImage("assets/small_fish.png");
-  //song = loadSound('assets/');
+  song = loadSound('assets/bensound-perception.mp3');
   //use song.play and song.stop
+  imageChangeCounter = 0;
 }
 
 function setup() {
@@ -41,6 +71,30 @@ function setup() {
   collectibleFish = [];
   offsetAmount = -2;
   currentOffset = 0;
+
+  song.stop();
+  song.play();
+  //song.volume(0.2);
+
+  //start game button
+  button = createButton("start game");
+  button.position(width/2 - 40, height/2 + 20);
+  button.mousePressed(startGame);
+
+  //restart game button
+  console.log("game over: " + gameOver);
+  restartButton = createButton("restart game");
+  restartButton.position(width/2 - 45, 2*height/3);
+  //restartButton.hide();
+  restartButton.mousePressed(restartGame);
+  // if(gameOver){
+  //   restartButton.show();
+  // }else{
+  //   restartButton.hide();
+  // }
+  restartButton.hide();
+  console.log("restartButton: " + restartButton)
+  
   //platform1 = new Platform();
   //random platforms
   balls = [];
@@ -88,12 +142,25 @@ function setup() {
 // }
 
 function draw() {
+  //console.log("inside start of game");
+  //console.log(startOfGame);
+
+  restartButton.hide();
+  console.log("game over in draw function: " + gameOver);
   if (startOfGame) {
+    
+    //restartButton.hide();
     introScreen();
   } else if (gameOver) {
     gameOverScreen();
+    //restartButton.show();
+    //song.stop();
   } else {
+    //button.hide();
+    //restartButton.hide();
     background(255);
+    drawBackground();
+    //song.play();
     //displayLives();
     for (let ball of balls) {
       ball.move();
@@ -127,7 +194,6 @@ function draw() {
     // }
     showObjects();
     victoryPlatform.showSelf();
-    drawBackground();
   }
 }
 
@@ -160,14 +226,14 @@ function keyPressed()
    //cat jump function;
   }
   */
-  if (keyCode == 83 && startOfGame) {
-    startOfGame = false;
-    //frameCount = 0;
-  }
+  // if (keyCode == 83 && startOfGame) {
+  //   startOfGame = false;
+  //   //frameCount = 0;
+  // }
 
-  if (keyCode == 82 && gameOver) {
-    setup();
-  }
+  // if (keyCode == 82 && gameOver) {
+  //   setup();
+  // }
 }
 
 function drawBackground(){ //helena
@@ -176,6 +242,7 @@ function drawBackground(){ //helena
   image(cloudImage, width / 2, height / 2, 40, 25);
   image(cloudImage, width / 1.5, height / 2.8, 200, 125);
   */
+  image(backgroundImage, 0, 0, width, height);
   image(waterImage, 0, height-40, width, 40);
 }
 
@@ -199,29 +266,41 @@ function drawScore() //emily
 
 function introScreen(){ //helena
   background(0);
+  //restartButton.hide();
   textAlign(CENTER);
   fill(255);
   textSize(100);
-  text("KITTY CATCH 2", width / 2, height / 3);
+  text("KITTY DASH", width / 2, height / 3);
   textSize(30);
   text("Instructions", width / 2, height / 2 - 50);
   textSize(15);
   text("Try to get the cat to the end goal!", width / 2, height / 2 - 20);
   text("Use arrow keys to move!", width / 2, height / 2);
   //start game button
-  //button = createButton("start game");
-  //button.position(width/2, 2*height/3);
-  //button.mousePressed(startGame());
-
+  // button = createButton("start game");
+  // button.position(width/2 - 40, height/2 + 20);
+  // button.mousePressed(startGame);
 }
 
 function startGame(){ //helena
   startOfGame = false;
+  button.hide();
   //gameOver = false;
+}
+
+function restartGame()
+{
+  restartButton.hide();
+  setup();
 }
 
 function gameOverScreen(){ //helena, emily
   background(0);
+  // restartButton = createButton("restart game");
+  // restartButton.position(width/2 - 45, 2*height/3);
+  // restartButton.mousePressed(restartGame);
+  restartButton.show();
+  //restartButton.hide();
   textFont("Helvetica");
   fill(255);
   textAlign(CENTER);
@@ -313,17 +392,112 @@ class Cat //emily
 {
   constructor() {
     this.width = 66;
-    this.height = 55;
+    this.height = 40;
     this.position = createVector(width/4, height - 400);
     this.velocity = createVector(0, 0);
     this.gravity = 2;
     this.isFalling = true;
     this.hasJump = true;
-    catImage = catImageR;
+    this.direction = "right";
+    this.isInjured = false;
+    catImage = catImageR1;
   }
 
   showSelf()
   {
+    if(keyIsDown(LEFT_ARROW) == false && keyIsDown(RIGHT_ARROW) == false && this.isInjured == false)
+    {
+      if(this.direction == "right")
+      {
+        catImage = catImageRIdle;
+      }
+      else
+      {
+        catImage = catImageLIdle;
+      }
+    }
+    else if (this.isInjured == false)
+    {
+      if(this.direction == "right"){
+        imageChangeCounter++;
+        if(imageChangeCounter <= 10)
+        {
+          catImage = catImageR1;
+        }
+        else if(imageChangeCounter <= 20)
+        {
+          catImage = catImageR2;
+        }
+        else if(imageChangeCounter <= 30)
+        {
+          catImage = catImageR3;
+        }
+        else{
+          imageChangeCounter = 0;
+        }
+      }
+
+      else
+      {
+        imageChangeCounter++;
+        if(imageChangeCounter <= 10)
+        {
+          catImage = catImageL1;
+        }
+        else if(imageChangeCounter <= 20)
+        {
+          catImage = catImageL2;
+        }
+        else if(imageChangeCounter <= 30)
+        {
+          catImage = catImageL3;
+        }
+        else{
+          imageChangeCounter = 0;
+        }
+      }
+  }
+  else
+  {
+    if(this.direction == "right"){
+      imageChangeCounter++;
+      if(imageChangeCounter <= 10)
+      {
+        catImage = catImageR1Injured;
+      }
+      else if(imageChangeCounter <= 20)
+      {
+        catImage = catImageR2Injured;
+      }
+      else if(imageChangeCounter <= 30)
+      {
+        catImage = catImageR3Injured;
+      }
+      else{
+        imageChangeCounter = 0;
+      }
+    }
+
+    else
+    {
+      imageChangeCounter++;
+      if(imageChangeCounter <= 10)
+      {
+        catImage = catImageL1Injured;
+      }
+      else if(imageChangeCounter <= 20)
+      {
+        catImage = catImageL2Injured;
+      }
+      else if(imageChangeCounter <= 30)
+      {
+        catImage = catImageL3Injured;
+      }
+      else{
+        imageChangeCounter = 0;
+      }
+    }
+  }
     image(catImage, this.position.x, this.position.y, this.width, this.height);
     if(this.position.x > width/12)
     {
@@ -343,11 +517,28 @@ class Cat //emily
 
     if(keyIsDown(LEFT_ARROW)) {
       this.velocity.x = -5
-      catImage = catImageL
+      player.direction = "left";
     }
     if(keyIsDown(RIGHT_ARROW)) {
       this.velocity.x = 5
-      catImage = catImageR
+      player.direction = "right";
+      // imageChangeCounter++;
+      // if(imageChangeCounter <= 1)
+      // {
+      //   catImage = catImageR1;
+      // }
+      // else if(imageChangeCounter <= 2)
+      // {
+      //   catImage = catImageR2;
+      // }
+      // else if(imageChangeCounter <= 3)
+      // {
+      //   catImage = catImageR3;
+      // }
+      // else{
+      //   imageChangeCounter = 0;
+      // }
+
     }
 
     if(keyIsDown(DOWN_ARROW) && this.isFalling) {
@@ -450,13 +641,16 @@ class Cat //emily
           gameOver = true;
         }
         //tint screen red
-        let red = color(0, 100, 70)
-        background("#d84622")
-        player.showSelf();
+        
+        //background("#d84622")
+        
         //tint(red)
+        player.isInjured = true;
+        player.showSelf();
       }
       else{
-        noTint()
+        player.isInjured = false;
+        //player.showSelf();
       }
     }
   }
@@ -511,7 +705,7 @@ class Cat //emily
       this.velocity = createVector(0,0)
       this.hasJump = true
       this.isFalling = false
-      gameOver = true;
+      waterMode();
     }
     if(this.position.y < 10)
     {
@@ -526,6 +720,16 @@ class Cat //emily
     if(this.position.x < 10)
     {
       this.position.x = 10
+    }
+    
+  }
+  
+  waterMove(){ //helena
+    this.position.y = 0;
+    if(this.position.y<height){
+      this.position.y++;
+    } else{
+      gameOverScreen();
     }
     
   }
@@ -707,6 +911,11 @@ class Ball{ //helena
 
 function waterMode(){ //helena
   //instead of dying/ having gameover when the cat hit the water,
-  // the screen changes into a different water interactive game
-
+  // the screen changes into a different water interactive game?
+  // or perhaps just an animaton of the cat sinking to the bottom of an ocean
+  background(0);
+  //set background to ocean image
+  image(underOceanImage, 0, 0, width, height);
+  //make cat slowly move down
+  player.waterMove();
 }
