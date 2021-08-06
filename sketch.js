@@ -1,12 +1,14 @@
 let catImage, catImageL, catImageR, waterImage, backgroundImage, platformImage, victoryPlatformImage, fishImage, smallFishImage, ballImage, underOceanImage;
-let startOfGame, gameOver, wonGame, platformX1, platformX2, platforms1, platforms2, obstacles, lives, previousY1, previousY2;
-let healthBoosts, collectibleFish, points, balls;
+let victorycat1, victorycat2, victorycat3, victorycat4, victorycat5;
+let sadcat1, sadcat2, sadcat3, sadcat4, sadcat5, sadcat6;
+let startOfGame, wonGame, platformX1, platformX2, platforms1, platforms2, obstacles, lives, previousY1, previousY2;
+let healthBoosts, collectibleFish, balls, teleportation;
 let offsetAmount;
 let currentOffset;
 let victoryPlatform;
 let imageChangeCounter;
 let highScore = 0;
-let button, restartButton;
+let button, restartButton, buttonColor;
 
 let catImageR1, catImageR2, catImageR3;
 let catImageL1, catImageL2, catImageL3;
@@ -14,8 +16,17 @@ let catImageR1Injured, catImageR2Injured, catImageR3Injured;
 let catImageL1Injured, catImageL2Injured, catImageL3Injured;
 let catImageRIdle, catImageLIdle;
 
+let gameOver;
+let continuingGame = false;
+let level = 1;
+let points = 0;
+
+let titleImage, titleImage2;
+
 function preload()
 {
+  titleImage = loadImage("assets/kit.png");
+  titleImage2 = loadImage("assets/kit2.png");
   catImageR = loadImage("assets/catR.png");
   catImageL = loadImage("assets/catL.png");
 
@@ -36,29 +47,47 @@ function preload()
   catImageRIdle = loadImage("assets/catIdleR.png");
   catImageLIdle = loadImage("assets/catIdleL.png");
 
+  victorycat1 = loadImage("assets/happycat1.gif");
+  victorycat2 = loadImage("assets/happycat2.gif");
+  victorycat3 = loadImage("assets/happycat3.gif");
+  victorycat4 = loadImage("assets/happycat4.gif");
+  victorycat5 = loadImage("assets/happycat5.gif");
+
+  sadcat1 = loadImage("assets/sadcat1.gif");
+  sadcat2 = loadImage("assets/sadcat2.gif");
+  sadcat3 = loadImage("assets/sadcat3.gif");
+  sadcat4 = loadImage("assets/sadcat4.gif");
+  sadcat5 = loadImage("assets/sadcat5.gif");
+  sadcat6 = loadImage("assets/sadcat6.gif");
+
   backgroundImage = loadImage("assets/background.png");
   //cloudImage = loadImage("");
   waterImage = loadImage("assets/water.png");
-  victoryPlatformImage = loadImage("assets/blossom_plank.png");
-  platformImage = loadImage("assets/vine_plank.png");
-  fishImage = loadImage("assets/fish.png");
-  ballImage = loadImage("assets/yarn.png");
+  victoryPlatformImage = loadImage("assets/vine_plank.png");
+  platformImage = loadImage("assets/wooden_plank.png");
+  fishImage = loadImage("assets/hpFish.gif");
+  ballImage = loadImage("assets/bubble.png");
   underOceanImage = loadImage("assets/ocean.jpeg");
 
-  smallFishImage = loadImage("assets/small_fish.png");
+  smallFishImage = loadImage("assets/kibble.gif");
   song = loadSound('assets/bensound-perception.mp3');
   //use song.play and song.stop
   imageChangeCounter = 0;
 }
 
 function setup() {
+  if(continuingGame == false)
+  {
+    points = 0;
+  }
   createCanvas(800, 600);
   colorMode(HSB, 360, 100, 100);
   startOfGame = true;
   gameOver = false;
   wonGame = false;
   lives=50;
-  points = 0;
+  //level=1;
+  //points = 0;
   player = new Cat();
   platformX1 = player.position.x;
   platformX2 = player.position.x-50;
@@ -76,15 +105,17 @@ function setup() {
   song.play();
   //song.volume(0.2);
 
+  buttonColor = color(278, 44, 94);
   //start game button
   button = createButton("start game");
   button.position(width/2 - 40, height/2 + 20);
   button.mousePressed(startGame);
+  button.size(100, 50);
 
   //restart game button
   console.log("game over: " + gameOver);
   restartButton = createButton("restart game");
-  restartButton.position(width/2 - 45, 2*height/3);
+  restartButton.position(width/2 - 45, 2*height/3 + 20);
   //restartButton.hide();
   restartButton.mousePressed(restartGame);
   // if(gameOver){
@@ -95,6 +126,13 @@ function setup() {
   restartButton.hide();
   console.log("restartButton: " + restartButton)
   
+  //next level button
+  levelButton = createButton("next level")
+  levelButton.position(width/2-45, 2*height/3-20);
+  levelButton.mousePressed(level2);
+  levelButton.hide();
+  levelButton.style('background-color', buttonColor);
+
   //platform1 = new Platform();
   //random platforms
   balls = [];
@@ -102,11 +140,14 @@ function setup() {
   for(let i = 0; i < numBalls; i++) {
     balls.push(new Ball());
   }
-  for(let i=0; i<15; i++){
+  for(let i=0; i<10; i++){
     platforms1.push(new Platform1(previousY1));
+    if(platforms1[i].y>height-70){
+      platforms1[i].y-=40;
+    }
     previousY1=platforms1[i].y;
     if(int(random(1, 10))%3==0 && i!=0){
-      obstacles.push(new Obstacle(platforms1[i].x, platforms1[i].y));
+      obstacles.push(new Obstacle(platforms1[i].x+2, platforms1[i].y+2));
     }
     if(int(random(1, 10)) % 6 == 0 && i!= 0)
     {
@@ -117,9 +158,12 @@ function setup() {
       collectibleFish.push(new PointFish(platforms1[i].x + platforms1[i].width * 3/4 - 8, platforms1[i].y - 9));
     }
     platforms2.push(new Platform2(previousY2));
+    if(platforms2[i].y<50){
+      platforms1[i].y+=40;
+    }
     previousY2=platforms2[i].y;
     if(int(random(1, 10))%3==0 && i!=0){
-      obstacles.push(new Obstacle(platforms2[i].x, platforms2[i].y));
+      obstacles.push(new Obstacle(platforms2[i].x+2, platforms2[i].y+2));
     }
     else if(int(random(1, 10)) % 6 == 0 && i!= 0)
     {
@@ -144,7 +188,7 @@ function setup() {
 function draw() {
   //console.log("inside start of game");
   //console.log(startOfGame);
-
+  levelButton.hide();
   restartButton.hide();
   console.log("game over in draw function: " + gameOver);
   if (startOfGame) {
@@ -264,18 +308,39 @@ function drawScore() //emily
   text(`Score: ${points}`, 10, 40);
 }
 
+function level2(){ //helena
+  levelButton.hide();
+  restartButton.hide();
+  level++;
+  setup();
+  
+}
+
 function introScreen(){ //helena
   background(0);
   //restartButton.hide();
   textAlign(CENTER);
   fill(255);
-  textSize(100);
-  text("KITTY DASH", width / 2, height / 3);
-  textSize(30);
-  text("Instructions", width / 2, height / 2 - 50);
-  textSize(15);
-  text("Try to get the cat to the end goal!", width / 2, height / 2 - 20);
-  text("Use arrow keys to move!", width / 2, height / 2);
+  //textSize(100);
+  //text("KITTY DASH", width / 2, height / 3);
+  image(titleImage2, 0, 0, width, height);
+  image(titleImage, 0, 0, width, height);
+  text(`Level: ${level}`, width - 30, 15);
+  if(level % 2 == 1)
+  {
+    textSize(12);
+    text("TELEPORTATION: ON", width - 70, 30);
+  }
+  else
+  {
+    textSize(12);
+    text("TELEPORTATION: OFF", width - 72, 30);
+  }
+  //textSize(30);
+  //text("Instructions", width / 2, height / 2 - 50);
+  //textSize(15);
+  //text("Try to get the cat to the end goal!", width / 2, height / 2 - 20);
+  //text("Use arrow keys to move!", width / 2, height / 2);
   //start game button
   // button = createButton("start game");
   // button.position(width/2 - 40, height/2 + 20);
@@ -291,6 +356,7 @@ function startGame(){ //helena
 function restartGame()
 {
   restartButton.hide();
+  levelButton.hide();
   setup();
 }
 
@@ -308,28 +374,39 @@ function gameOverScreen(){ //helena, emily
   //if game was completed -> victory
   if(wonGame)
     {
+      continuingGame = true;
       text(`VICTORY!!`, width / 2, height / 2 - 30);
       textSize(15);
-      text(`Score: ${points}   HP Bonus: ${lives}`, width/2, height/2);
-      text(`Final Score: ${points + lives}`, width/2, height/2 + 30);
-      let currentScore = points + lives
-      if(currentScore > highScore)
+      text(`Score: ${points}`, width/2, height/2);
+      if(points > highScore)
       {
-        highScore = currentScore;
+        highScore = points;
       }
-      text(`High Score: ${highScore}`, width/2, height/2 + 60);
+      text(`High Score: ${highScore}`, width/2, height/2 + 30);
+      levelButton.show();
+      image(victorycat5, 40, 40, 200, 190);
+      image(victorycat2, width/2, 30);
+      image(victorycat3, width/2+60, height-180);
+      image(victorycat4, 100, height-300);
+      image(victorycat1, width-200, height/2, 110, 100);
     }
   //else if game not completed -> game over
   else
   {
+    continuingGame = false;
     text(`GAME OVER!!`, width / 2, height / 2 - 30);
     textSize(15);
     text(`Score: ${points}`, width/2, height/2);
     if(points > highScore)
     {
-      highScore = points
+      highScore = points;
     }
+    //points = 0;
     text(`High Score: ${highScore}`, width/2, height/2 + 30);
+    image(sadcat1, 20, 20, 300, 200);
+    image(sadcat2, width * 3 / 4, 40, 200, 250);
+    image(sadcat3, width - 350, height - 190, 270, 180);
+    image(sadcat6, 40, height - 250);
   }
   textSize(15);
   //text(`Score: ${score}`, width / 2, height / 2 + 10);
@@ -361,21 +438,6 @@ function displayScore(){ //helena
 }
 
 function fixHitboxes(){ //emily
-  // for(let platform of platforms1)
-  // {
-  //   platform.translate();
-  // }
-
-  // for(let platform of platforms2)
-  // {
-  //   platform.translate();
-  // }
-
-  // for(let obstacle of obstacles)
-  // {
-  //   obstacle.translate();
-  // }
-  // victoryPlatform.translate();
 
   let movableItems = [platforms1, platforms2, obstacles, healthBoosts, collectibleFish]
   for(let itemName of movableItems)
@@ -392,7 +454,7 @@ class Cat //emily
 {
   constructor() {
     this.width = 66;
-    this.height = 40;
+    this.height = 30;
     this.position = createVector(width/4, height - 400);
     this.velocity = createVector(0, 0);
     this.gravity = 2;
@@ -583,23 +645,45 @@ class Cat //emily
       if(i == 0){
         //console.log(platformCheck)
       }
-      if(collideRectRect(this.position.x, this.position.y, this.width, this.height, platformCheck.x, platformCheck.y, platformCheck.width, platformCheck.height))
+      if(this.direction == "right")
       {
-        this.position.y = platformCheck.y - this.height
-        // if(this.position.y + this.height < platformCheck.y)
-        //   {
-        //     this.position.y -= 1;
-        //   }
-        //console.log("collision")
-        this.isFalling = false
-        this.velocity.y = 0;
-        this.velocity.x = 0;
-        //this.velocity = createVector(0,0);
-        this.hasJump = true
-      }
+        //rect(this.position.x + 35, this.position.y, 27, this.height);
+        if(collideRectRect(this.position.x + 35, this.position.y, 27, this.height, platformCheck.x, platformCheck.y, platformCheck.width, platformCheck.height))
+          {
+            this.position.y = platformCheck.y - this.height
+            // if(this.position.y + this.height < platformCheck.y)
+            //   {
+            //     this.position.y -= 1;
+            //   }
+            //console.log("collision")
+            this.isFalling = false
+            this.velocity.y = 0;
+            this.velocity.x = 0;
+            //this.velocity = createVector(0,0);
+            this.hasJump = true
+          }
       // else{
       //   this.isFalling = true
       // }
+      }
+      else
+      {
+        //rect(this.position.x + 4, this.position.y, 27, this.height);
+        if(collideRectRect(this.position.x + 4, this.position.y, 27, this.height, platformCheck.x, platformCheck.y, platformCheck.width, platformCheck.height))
+          {
+            this.position.y = platformCheck.y - this.height
+            // if(this.position.y + this.height < platformCheck.y)
+            //   {
+            //     this.position.y -= 1;
+            //   }
+            //console.log("collision")
+            this.isFalling = false
+            this.velocity.y = 0;
+            this.velocity.x = 0;
+            //this.velocity = createVector(0,0);
+            this.hasJump = true
+          }
+      } 
     }
 
     for(let i = 0; i < platforms2.length; i++)
@@ -608,23 +692,45 @@ class Cat //emily
       if(i == 0){
         //console.log(platformCheck)
       }
-      if(collideRectRect(this.position.x, this.position.y, this.width, this.height, platformCheck.x, platformCheck.y, platformCheck.width, platformCheck.height))
+      if(this.direction == "right")
       {
-        this.position.y = platformCheck.y - this.height
-        // if(this.position.y + this.height < platformCheck.y)
-        //   {
-        //     this.position.y -= 1;
-        //   }
-        //console.log("collision")
-        this.isFalling = false
-        this.velocity.y = 0;
-        this.velocity.x = 0;
-        //this.velocity = createVector(0,0);
-        this.hasJump = true
-      }
+        //rect(this.position.x + 35, this.position.y, 27, this.height);
+        if(collideRectRect(this.position.x + 35, this.position.y, 27, this.height, platformCheck.x, platformCheck.y, platformCheck.width, platformCheck.height))
+          {
+            this.position.y = platformCheck.y - this.height
+            // if(this.position.y + this.height < platformCheck.y)
+            //   {
+            //     this.position.y -= 1;
+            //   }
+            //console.log("collision")
+            this.isFalling = false
+            this.velocity.y = 0;
+            this.velocity.x = 0;
+            //this.velocity = createVector(0,0);
+            this.hasJump = true
+          }
       // else{
       //   this.isFalling = true
       // }
+      }
+      else
+      {
+        //rect(this.position.x + 4, this.position.y, 27, this.height);
+        if(collideRectRect(this.position.x + 4, this.position.y, 27, this.height, platformCheck.x, platformCheck.y, platformCheck.width, platformCheck.height))
+          {
+            this.position.y = platformCheck.y - this.height
+            // if(this.position.y + this.height < platformCheck.y)
+            //   {
+            //     this.position.y -= 1;
+            //   }
+            //console.log("collision")
+            this.isFalling = false
+            this.velocity.y = 0;
+            this.velocity.x = 0;
+            //this.velocity = createVector(0,0);
+            this.hasJump = true
+          }
+      } 
     }
   }
 
@@ -690,7 +796,7 @@ class Cat //emily
     }
   }
 
-  jumpGravity()
+  jumpGravity() //helena+emily
   {
     this.position.add(this.velocity)
     if(this.isFalling)
@@ -704,8 +810,13 @@ class Cat //emily
       this.position.y = height - this.height - 10
       this.velocity = createVector(0,0)
       this.hasJump = true
-      this.isFalling = false
-      waterMode();
+      this.isFalling = false;
+      if(level % 2 == 1){ 
+        waterMode();
+      }else {
+        gameOver=true;
+      }
+      
     }
     if(this.position.y < 10)
     {
@@ -743,7 +854,7 @@ class Platform1{ //helena
     this.y = int(random(previousY1-40, previousY1+40));
     this.width = int(random(40, 130)); //min width=40, max width=~130?
     //this.width = random(40, 130);
-    this.height = 10;
+    this.height = 15;
     platformX1 += int(random(65, 135))+this.width;
   }
   showSelf(){
@@ -754,7 +865,7 @@ class Platform1{ //helena
   }
   translate(){ //emily
     this.x += currentOffset;
-    this.showSelf();
+    //this.showSelf();
   }
 }
 
@@ -766,7 +877,7 @@ class Platform2{ //helena
     this.y = int(random(previousY2-40, previousY2+40));
     this.width = int(random(40, 130)); //min width=40, max width=~130?
     //this.width = random(40, 130);
-    this.height = 10;
+    this.height = 15;
     platformX2 += int(random(65, 135))+this.width;
   }
   showSelf(){
@@ -777,7 +888,7 @@ class Platform2{ //helena
   }
   translate(){ //emily
     this.x += currentOffset;
-    this.showSelf();
+    //this.showSelf();
   }
 }
 
@@ -787,7 +898,7 @@ class FinalPlatform{
     this.x = platforms1[platforms1.length - 1].x + 150;
     this.y = platforms1[platforms1.length - 1].y + 20;
     this.width = 250;
-    this.height = 38;
+    this.height = 20;
   }
   showSelf()
   {
@@ -798,7 +909,7 @@ class FinalPlatform{
   translate()
   {
     this.x += currentOffset;
-    this.showSelf();
+    //this.showSelf();
   }
 }
 
@@ -823,7 +934,7 @@ class Obstacle{ //helena
     this.x1 += currentOffset;
     this.x2 += currentOffset;
     this.x3 += currentOffset;
-    this.showSelf();
+    //this.showSelf();
   }
 }
 
@@ -832,18 +943,18 @@ class PointFish{//emily
   {
     this.x = x;
     this.y = y;
-    this.width = 16;
-    this.height = 9;
+    this.width = 18;
+    this.height = 18;
   }
 
   showSelf()
   {
-    image(smallFishImage, this.x, this.y, this.width, this.height);
+    image(smallFishImage, this.x, this.y - 7, this.width, this.height);
   }
   translate()
   {
     this.x += currentOffset;
-    this.showSelf();
+    //this.showSelf();
   }
 }
 
@@ -852,17 +963,17 @@ class HealthBoost{ //emily
   {
     this.x = x;
     this.y = y;
-    this.width = 30;
-    this.height = 15;
+    this.width = 32;
+    this.height = 24;
   }
   showSelf()
   {
-    image(fishImage, this.x, this.y, this.width, this.height);
+    image(fishImage, this.x, this.y - 10, this.width, this.height);
   }
   translate()
   {
     this.x += currentOffset;
-    this.showSelf();
+    //this.showSelf();
   }
 }
 
@@ -913,9 +1024,11 @@ function waterMode(){ //helena
   //instead of dying/ having gameover when the cat hit the water,
   // the screen changes into a different water interactive game?
   // or perhaps just an animaton of the cat sinking to the bottom of an ocean
-  background(0);
+  //background(0);
+
   //set background to ocean image
-  image(underOceanImage, 0, 0, width, height);
-  //make cat slowly move down
+  //image(underOceanImage, 0, 0, width, height);
+
+  //make cat slowly move down after moving to top of screen
   player.waterMove();
 }
