@@ -27,8 +27,6 @@ function preload()
 {
   titleImage = loadImage("assets/kit.png");
   titleImage2 = loadImage("assets/kit2.png");
-  catImageR = loadImage("assets/catR.png");
-  catImageL = loadImage("assets/catL.png");
 
   catImageR1 = loadImage("assets/cat1r.png");
   catImageR2 = loadImage("assets/cat2r.png")
@@ -67,7 +65,7 @@ function preload()
   platformImage = loadImage("assets/wooden_plank.png");
   fishImage = loadImage("assets/hpFish.gif");
   ballImage = loadImage("assets/bubble.png");
-  underOceanImage = loadImage("assets/ocean.jpeg");
+  //underOceanImage = loadImage("assets/ocean.jpeg");
 
   smallFishImage = loadImage("assets/kibble.gif");
   song = loadSound('assets/bensound-perception.mp3');
