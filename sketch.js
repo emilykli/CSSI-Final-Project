@@ -355,6 +355,7 @@ function restartGame()
 {
   restartButton.hide();
   levelButton.hide();
+  level = 1;
   setup();
 }
 
